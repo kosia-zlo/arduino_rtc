@@ -3,8 +3,8 @@
  
   Часы с семисегментным дисплеем и RTC. ПО часов.
   Версия                      : 1.1
-  Сборка номер                : 51
-  Сборка дата                 : 04.01.2019
+  Сборка номер                : 52
+  Сборка дата                 : 08.01.2019
   Сборка устройства           : Молоткин Константин и выпускник ..... 
   Программное Обеспечение     : Молоткин Константин 
   Курс                        : 4
@@ -40,9 +40,19 @@ TM74HC595Display disp(SCLK, RCLK, DIO); // указываем выводы ди�
 #define  LOAD        1                   // 0 для выключения. 1 для включения. ФУНКЦИЯ ЗАГРУЗКИ
 #define  DISPIN      1                   // 0 для выключения. 1 для включения. ФУНКЦИЯ ОТОБРАЖЕНИЯ ДАТЫ ПРИ ЗАГРУЗКЕ
 #define  OTK         0                   // 0 для выключения. 1 для включения.  ОТКЛЮЧЕНИЕ ДИСПЛЕЯ В ПРОСТОЕ 
-#define  OTK_VER                         // ВРЕМЯ ПРОСТОЯ ДО ОТКЛЮЧЕНИЯ ДИСПЛЕЯ не сделал  сделать разделения по сегментам
+#define  OTK_VER     5                   // ВРЕМЯ ПРОСТОЯ ДО ОТКЛЮЧЕНИЯ ДИСПЛЕЯ не сделал  /сделать разделения по сегментам
 #define  COLBIB      100                 //  Символов в библиотеки +1 для запаса
 #define  VER         1.1                //  ВЕРСИЯ ПО НЕ ТРОГАЙ/ ЕСЛИ ЧТО-ТО ИЗМЕНЯЕТЕ В КОДЕ, СООБЩИТЕ МНЕ!!!
+#define  SBR         52                 //  ВЕРСИЯ СБОРКИ НЕ ТРОГАЙ/ ЕСЛИ ЧТО-ТО ИЗМЕНЯЕТЕ В КОДЕ, СООБЩИТЕ МНЕ!!!
+#define  SBR_DATA    08.01.2019         //  ДАТА СБОРКИ НЕ ТРОГАЙ/ ЕСЛИ ЧТО-ТО ИЗМЕНЯЕТЕ В КОДЕ, СООБЩИТЕ МНЕ!!!
+/*
+ * ПЛАНИРУЕМЫЕ ФУНКЦИИ
+ * ВРЕМЯ ПРОСТОЯ ДО ОТКЛЮЧЕНИЯ ДИСПЛЕЯ  
+ * сделать разделения по сегментам в анимациях
+ * 4 и 5 режим змейки
+ * НОЧНОЙ РЕЖИМ!
+ * 
+ */
 
 
 // *************************************************************** НАСТРОЙКИ БУДИЛЬНИКА ***********************
@@ -53,7 +63,7 @@ TM74HC595Display disp(SCLK, RCLK, DIO); // указываем выводы ди�
 
 // *************************************************************** НАСТРОЙКИ НОЧНОГО РЕЖИМА ***********************
 
-#define  NOCH             0    // 0 для выключения. 1 для включения. ФУНКЦИЯ НОЧЬ
+#define  NOCH             1    // 0 для выключения. 1 для включения. ФУНКЦИЯ НОЧЬ
 #define  NOCH_CHAS_ON     1   // время ночного режима (вкл)
 #define  NOCH_CHAS_OFF    7   // время ночного режима (выкл)
 
@@ -97,7 +107,7 @@ void setup() {
    timer_anim = random(1, 60);}
 
   bibl();
-    for( int x = 0; x<2; x++)
+    for( int x = 0; x<4; x++)
     {zmeika();} 
    disp.clear();
   if (TEST == 1){
@@ -108,7 +118,7 @@ void setup() {
   datadisp();
  }
   if (NOCH == 1 ){ 
-  if (10 > time.Hours ){
+  if ( NOCH_CHAS_OFF  > time.Hours ){
 disp.set(LED_0F[0], 3);
   disp.dispFloat(time.Hours, 2);
   disp.dispFloat(time.minutes, 0);
@@ -139,6 +149,7 @@ void loop(){
     last_time = millis();
   }
     }
+    
     else{
      if(millis() - last_time > (ANIM_T)*1000*60) // 60 количество секунд в минуте / 1000 = 1 секунда.
    {
@@ -155,45 +166,9 @@ void loop(){
   if (PAR == 1 ){
     para(); }    
 //Время на дисплее
-
-if (NOCH_CHAS_ON > time.Hours & time.Hours < NOCH_CHAS_OFF) {
-  if (NOCH == 1 ){
-  if(millis() - last_time > 60000){
-    if (ANIM == 0 ){
-  disp.set(LED_0F[12], 3);
-  disp.set(LED_0F[22], 2);
-  disp.set(LED_0F[17], 1);
-  disp.set(LED_0F[28], 0);
-  delay(500); 
-  }
-      if (ANIM == 1 ){
-  disp.set(LED_0F[12], 3);
-  disp.set(LED_0F[22], 2);
-  disp.set(LED_0F[17], 1);
-  disp.set(LED_0F[28], 0);
-  delay(500); 
-  }
-      if (ANIM == 2 ){
-  disp.set(LED_0F[12], 3);
-  disp.set(LED_0F[22], 2);
-  disp.set(LED_0F[17], 1);
-  disp.set(LED_0F[28], 0);
-  delay(500); 
-  }
-      if (ANIM == 3 ){
-  disp.set(LED_0F[12], 3);
-  disp.set(LED_0F[22], 2);
-  disp.set(LED_0F[17], 1);
-  disp.set(LED_0F[28], 0);
-  delay(500); 
-  }
-  }
-  else{
-  disp.clear();
-}
-}
-}
-else  { 
+if (NOCH == 1 ){
+  hochka();
+} 
   
  if(time.minutes == 30 && time.seconds == 00){
   datadisp();  }
@@ -206,7 +181,8 @@ else  {
  }}
 //--------------------------------- 
 if(time.minutes != mint & time.minutes != 00 & time.minutes != 30 ) 
-    {
+   
+ {
       if (ANIM == 0 ){
       mint = time.minutes;}
      if (ANIM == 1 ){
@@ -221,8 +197,8 @@ if(time.minutes != mint & time.minutes != 00 & time.minutes != 30 )
     confeti();
     mint = time.minutes ;
     } 
-      
     }  
+    
 if (10 >time.Hours){
   disp.set(LED_0F[0], 3);
   disp.dispFloat(time.Hours, 2);
@@ -232,9 +208,9 @@ if (10 >time.Hours){
   else{
   disp.dispFloat(time.Hours, 2);
   disp.dispFloat(time.minutes, 0);
-  delay(900);
+  delay(1000);
   }
-  }
+  
 
   
 
@@ -442,6 +418,7 @@ crugif();
 disp.set(LED_0F[46], 3);
 cr=2;
 crugif();
+disp.set(LED_0F[29], 2);
 cr=1;
 crugif();
 cr=0;
@@ -815,6 +792,51 @@ disp.clear() ;
 confeti();
 }
 }
+void hochka(){
+ if (NOCH_CHAS_ON < time.Hours & time.Hours < NOCH_CHAS_OFF) {
+  
+    disp.clear();
+    
+  if(millis() - last_time > 1000*60){
+    if (ANIM == 0 ){
+  disp.set(LED_0F[12], 3);
+  disp.set(LED_0F[22], 2);
+  disp.set(LED_0F[17], 1);
+  disp.set(LED_0F[28], 0);
+  delay(500); 
+  }
+      if (ANIM == 1 ){
+  disp.set(LED_0F[12], 3);
+  disp.set(LED_0F[22], 2);
+  disp.set(LED_0F[17], 1);
+  disp.set(LED_0F[28], 0);
+  delay(500); 
+  }
+      if (ANIM == 2 ){
+  disp.set(LED_0F[12], 3);
+  disp.set(LED_0F[22], 2);
+  disp.set(LED_0F[17], 1);
+  disp.set(LED_0F[28], 0);
+  delay(500); 
+  }
+      if (ANIM == 3 ){
+  disp.set(LED_0F[12], 3);
+  disp.set(LED_0F[22], 2);
+  disp.set(LED_0F[17], 1);
+  disp.set(LED_0F[28], 0);
+  delay(500); 
+  }
+  last_time = millis();
+  }
+  else{
+  disp.clear();
+}
+
+ set_sleep_mode( SLEEP_MODE_IDLE) ;     // Режим энерго сбережения
+  sleep_mode(); // Режим пониженого энергопотребления включается
+  delay(10000);
+}
+} 
 void para (){
   if( para_flag == 0){
  
@@ -2082,6 +2104,7 @@ break;
   long rn2 ;
   long rn3 ;
   long crek;
+  long time_r;
   for ( int x = 0; x<20; x++)
   {
    crek = random(0,4);
@@ -2111,14 +2134,16 @@ switch (crek) {
     rn3 = random(36,44);
 break;
 }
+time_r = random(50,150);
+
       disp.set(LED_0F[(rn)], 3);
-      delay(100);
+      delay(time_r);
       disp.set(LED_0F[(rn1)], 2);
-      delay(100);
+      delay(time_r);
       disp.set(LED_0F[(rn2)], 1);
-      delay(100);
+      delay(time_r);
       disp.set(LED_0F[(rn3)], 0);
-      delay(100);
+      delay(time_r);
   
  }
  }
@@ -2126,7 +2151,7 @@ break;
 void anima(){
   long rn ;
    rn  = random(1,10);
-//   Serial.println(rn);
+  Serial.println(rn);
 switch (rn){
    case 1:
     probeg();
